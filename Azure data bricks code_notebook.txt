@@ -1,0 +1,100 @@
+from pyspark.sql.functions import col
+from pyspark.sql.types import IntegerType, DoubleType, BooleanType, DateType
+
+spark.conf.set(
+    "fs.azure.account.key.satokyoolympicdata.dfs.core.windows.net",
+    "75MEpNCmRS21QXxQdbLVg7CvbwFPX7s0QuwLsnPE4amlVao5xbYebyBMpRUAvLDdRJf6xu2G8BP7+AStMuapiQ==")
+
+## dataframes
+athletes=spark.read.csv(path='abfss://tokyo-olympic-data@satokyoolympicdata.dfs.core.windows.net/raw-data/athletes.csv',header=True)
+display(athletes)
+Coaches=spark.read.csv(path='abfss://tokyo-olympic-data@satokyoolympicdata.dfs.core.windows.net/raw-data/Coaches.csv',header=True)
+display(Coaches)
+entriesgender=spark.read.csv(path='abfss://tokyo-olympic-data@satokyoolympicdata.dfs.core.windows.net/raw-data/entriesgender.csv',header=True)
+display(entriesgender)
+medals=spark.read.csv(path='abfss://tokyo-olympic-data@satokyoolympicdata.dfs.core.windows.net/raw-data/medals.csv',header=True)
+display(medals)
+teams=spark.read.csv(path='abfss://tokyo-olympic-data@satokyoolympicdata.dfs.core.windows.net/raw-data/teams.csv',header=True)
+display(teams)
+
+
+##Checking data types
+athletes.printSchema()
+Coaches.printSchema()
+entriesgender.printSchema()
+
+##Change data type
+
+course_df3 = entriesgender \
+  .withColumn("Female",
+              entriesgender["Female"] 
+              .cast(IntegerType()))   \
+  .withColumn("Male", 
+              entriesgender["Male"] 
+              .cast(IntegerType()))    \
+  .withColumn("Total"  , 
+              entriesgender["Total"] 
+              .cast(IntegerType())) \
+
+course_df3.printSchema()
+
+##Inferscema using option to change data type
+athletes=spark.read.csv(path='abfss://tokyo-olympic-data@satokyoolympicdata.dfs.core.windows.net/raw-data/athletes.csv',header=True,inferSchema=True)
+display(athletes)
+Coaches=spark.read.csv(path='abfss://tokyo-olympic-data@satokyoolympicdata.dfs.core.windows.net/raw-data/Coaches.csv',header=True,inferSchema=True)
+display(Coaches)
+entriesgender=spark.read.csv(path='abfss://tokyo-olympic-data@satokyoolympicdata.dfs.core.windows.net/raw-data/entriesgender.csv',header=True,inferSchema=True)
+display(entriesgender)
+medals=spark.read.csv(path='abfss://tokyo-olympic-data@satokyoolympicdata.dfs.core.windows.net/raw-data/medals.csv',header=True,inferSchema=True)
+display(medals)
+teams=spark.read.csv(path='abfss://tokyo-olympic-data@satokyoolympicdata.dfs.core.windows.net/raw-data/teams.csv',header=True,inferSchema=True)
+display(teams)
+
+medals.printSchema()
+
+teams.show()
+
+teams.printSchema()
+
+# Find the top countries with the highest number of gold medals
+top_gold_medal_countries = medals.orderBy("Gold", ascending=False).select("Team_Country","Gold").show()
+
+
+##athletes write in tranform folder in Storge account
+athletes=spark.read.csv(path='abfss://tokyo-olympic-data@satokyoolympicdata.dfs.core.windows.net/raw-data/athletes.csv',header=True,inferSchema=True)
+display(athletes)
+athletes.printSchema()
+athletes.repartition(1).write.mode("overwrite").option("header",'true').csv("abfss://tokyo-olympic-data@satokyoolympicdata.dfs.core.windows.net/transform-data/athletes")
+
+##Coaches
+Coaches=spark.read.csv(path='abfss://tokyo-olympic-data@satokyoolympicdata.dfs.core.windows.net/raw-data/Coaches.csv',header=True,inferSchema=True)
+
+display(Coaches)
+
+Coaches.printSchema()
+
+Coaches.repartition(1).write.mode("overwrite").option("header",'true').csv("abfss://tokyo-olympic-data@satokyoolympicdata.dfs.core.windows.net/transform-data/Coaches")
+
+##entriesgender
+entriesgender=spark.read.csv(path='abfss://tokyo-olympic-data@satokyoolympicdata.dfs.core.windows.net/raw-data/entriesgender.csv',header=True,inferSchema=True)
+display(entriesgender)
+
+entriesgender.printSchema()
+
+entriesgender.repartition(1).write.mode("overwrite").option("header",'true').csv("abfss://tokyo-olympic-data@satokyoolympicdata.dfs.core.windows.net/transform-data/entriesgender")
+
+##medals
+medals=spark.read.csv(path='abfss://tokyo-olympic-data@satokyoolympicdata.dfs.core.windows.net/raw-data/medals.csv',header=True,inferSchema=True)
+display(medals)
+
+medals.printSchema()
+
+medals.repartition(1).write.mode("overwrite").option("header",'true').csv("abfss://tokyo-olympic-data@satokyoolympicdata.dfs.core.windows.net/transform-data/medals")
+
+##teams
+teams=spark.read.csv(path='abfss://tokyo-olympic-data@satokyoolympicdata.dfs.core.windows.net/raw-data/teams.csv',header=True,inferSchema=True)
+display(teams)
+
+teams.printSchema()
+
+teams.repartition(1).write.mode("overwrite").option("header",'true').csv("abfss://tokyo-olympic-data@satokyoolympicdata.dfs.core.windows.net/transform-data/teams")
